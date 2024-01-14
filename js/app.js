@@ -22,7 +22,7 @@ fetch(url)
     .then((data) => data.results)
     .then(createCards)
     .then(createModal)
-    .catch((err) => console.warn);
+    .catch((err) => console.warn(err));
 
 function createCards(results) {
     profiles = results;
@@ -46,6 +46,33 @@ function createCards(results) {
     });
 
     const cards = document.querySelectorAll('.card');
+    const form = searchContainer.querySelector('form');
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        let formInput = form.querySelector('.search-input');
+        const input = formInput.value.trim().toLowerCase();
+
+        // console.log(input);
+        cards.forEach((card) => {
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    card.style.display = 'block';
+                }
+            });
+            if (
+                card.dataset.name.trim().toLowerCase().includes(input) &&
+                input.length >= 3
+            ) {
+                formInput.value = '';
+                card.style.display = 'block';
+            } else if (input.length === 0) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+
     return cards;
 }
 const body = document.querySelector('body');
@@ -109,7 +136,6 @@ function modalSeperate(arr, index) {
             }
         }
         if (e.target.closest('.modal-next')) {
-            console.log(index);
             modal.remove();
             if (index < 11) {
                 modal.remove();
