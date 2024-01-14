@@ -48,28 +48,31 @@ function createCards(results) {
     const cards = document.querySelectorAll('.card');
     return cards;
 }
+const body = document.querySelector('body');
+
 function createModal(cards) {
-    const body = document.querySelector('body');
     cards.forEach((card, i) => {
-        // console.log(card.dataset.name);
-        card.addEventListener('click', (e) => {
-            // console.log(e.target.closest('.card').dataset.name, i);
-            const current = profiles[i];
-            const nameToSearch = e.target.closest('.card').dataset.name;
-            console.log(current, nameToSearch);
-            const name = `${current.name.title}. ${current.name.first} ${current.name.last}`;
-            const image = current.picture.large;
-            const email = current.email;
-            const street = `${current.location.street.number} ${current.location.street.name}`;
-            const city = current.location.city;
-            const country = current.location.country;
-            const state = current.location.state;
-            const postcode = current.location.postcode;
-            const phone = current.phone;
-            const dob = current.dob.date;
-            const modal = document.createElement('div');
-            modal.classList.add('modal-container');
-            modal.innerHTML = `<div class="modal">
+        card.addEventListener('click', () => {
+            modalSeperate(profiles, i);
+        });
+    });
+}
+
+function modalSeperate(arr, index) {
+    let current = arr[index];
+    const name = `${current.name.title}. ${current.name.first} ${current.name.last}`;
+    const image = current.picture.large;
+    const email = current.email;
+    const street = `${current.location.street.number} ${current.location.street.name}`;
+    const city = current.location.city;
+    const country = current.location.country;
+    const state = current.location.state;
+    const postcode = current.location.postcode;
+    const phone = current.phone;
+    const dob = current.dob.date;
+    const modal = document.createElement('div');
+    modal.classList.add('modal-container');
+    modal.innerHTML = `<div class="modal">
                     <button type="button" id="modal-close-btn" class="modal-close-btn"><strong>X</strong></button>
                     <div class="modal-info-container">
                         <img class="modal-img" src="${image}" alt="profile picture">
@@ -88,19 +91,36 @@ function createModal(cards) {
                     <button type="button" id="modal-prev" class="modal-prev btn">Prev</button>
                     <button type="button" id="modal-next" class="modal-next btn">Next</button>
                 </div>`;
-            body.appendChild(modal);
+    body.appendChild(modal);
 
-            ///clicking on the close button will close the modal
-            const closeBtn = document.getElementById('modal-close-btn');
-            closeBtn.addEventListener('click', (e) => {
-                if (e.target.closest('.modal-close-btn')) {
-                    modal.remove();
-                }
-            });
-        });
+    ///clicking on the close button will close the modal
+    modal.addEventListener('click', (e) => {
+        if (e.target.closest('.modal-close-btn')) {
+            modal.remove();
+        }
+        if (e.target.closest('.modal-prev')) {
+            console.log(index);
+            if (index > 0) {
+                modal.remove();
+                modalSeperate(profiles, (index -= 1));
+            } else {
+                modal.remove();
+                modalSeperate(profiles, (index = 11));
+            }
+        }
+        if (e.target.closest('.modal-next')) {
+            console.log(index);
+            modal.remove();
+            if (index < 11) {
+                modal.remove();
+                modalSeperate(profiles, (index += 1));
+            } else {
+                modal.remove();
+                modalSeperate(profiles, (index = 0));
+            }
+        }
     });
 }
-
 //clicking outside the modal will close the modal
 window.addEventListener('click', (e) => {
     if (e.target.className === 'modal-container') {
