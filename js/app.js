@@ -14,15 +14,15 @@ const gallery = document.getElementById('gallery');
 const url = 'https://randomuser.me/api/?results=12&nat=ca,us,gb,nz,au';
 let profiles = '';
 
-async function fetchData(url) {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('Error Fetching Data');
-    return response.json();
-}
-
-fetchData(url)
+fetch(url)
+    .then((res) => {
+        if (!res.ok) throw new Error('Error Fetching Data');
+        return res.json();
+    })
     .then((data) => data.results)
-    .then(createCards);
+    .then(createCards)
+    .then(createModal)
+    .catch((err) => console.warn);
 
 function createCards(results) {
     profiles = results;
@@ -33,6 +33,7 @@ function createCards(results) {
         const cityState = `${result.location.city}, ${result.location.state}`;
         const card = document.createElement('div');
         card.classList.add('card');
+        card.dataset.name = name;
         card.innerHTML = `<div class="card-img-container">
                                     <img class="card-img" src='${image}' alt="profile picture">
                                 </div>
@@ -43,8 +44,76 @@ function createCards(results) {
                                 </div>`;
         gallery.appendChild(card);
     });
-    console.log(profiles);
+
+    const cards = document.querySelectorAll('.card');
+    return cards;
 }
+function createModal(cards) {
+    const body = document.querySelector('body');
+    cards.forEach((card, i) => {
+        // console.log(card.dataset.name);
+        card.addEventListener('click', (e) => {
+            // console.log(e.target.closest('.card').dataset.name, i);
+            const current = profiles[i];
+            const nameToSearch = e.target.closest('.card').dataset.name;
+            console.log(current, nameToSearch);
+            const name = `${current.name.title}. ${current.name.first} ${current.name.last}`;
+            const image = current.picture.large;
+            const email = current.email;
+            const street = `${current.location.street.number} ${current.location.street.name}`;
+            const city = current.location.city;
+            const country = current.location.country;
+            const state = current.location.state;
+            const postcode = current.location.postcode;
+            const phone = current.phone;
+            const dob = current.dob.date;
+            const modal = document.createElement('div');
+            modal.classList.add('modal-container');
+            modal.innerHTML = `<div class="modal">
+                    <button type="button" id="modal-close-btn" class="modal-close-btn"><strong>X</strong></button>
+                    <div class="modal-info-container">
+                        <img class="modal-img" src="${image}" alt="profile picture">
+                        <h3 id="name" class="modal-name cap">${name}</h3>
+                        <p class="modal-text">${email}</p>
+                        <p class="modal-text cap">${city}</p>
+                        <hr>
+                        <p class="modal-text">${phone}</p>
+                        <p class="modal-text">${street}, ${country},<br> ${state} ${postcode}</p>
+                        <p class="modal-text">Birthday: ${dateFormat(dob)}</p>
+                    </div>
+                </div>
+
+                // IMPORTANT: Below is only for exceeds tasks 
+                <div class="modal-btn-container">
+                    <button type="button" id="modal-prev" class="modal-prev btn">Prev</button>
+                    <button type="button" id="modal-next" class="modal-next btn">Next</button>
+                </div>`;
+            body.appendChild(modal);
+
+            ///clicking on the close button will close the modal
+            const closeBtn = document.getElementById('modal-close-btn');
+            closeBtn.addEventListener('click', (e) => {
+                if (e.target.closest('.modal-close-btn')) {
+                    modal.remove();
+                }
+            });
+        });
+    });
+}
+
+//clicking outside the modal will close the modal
+window.addEventListener('click', (e) => {
+    if (e.target.className === 'modal-container') {
+        document.querySelector('.modal-container').remove();
+    }
+});
+
+//HELPER FUNCTIONS
+function dateFormat(date) {
+    const dob = new Date(date);
+    return dob.toLocaleDateString();
+}
+
 /* 
 {
     "gender": "female",
